@@ -1,0 +1,146 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Enums
+enum UserRole {
+  CUSTOMER
+  SELLER
+  ADMIN
+}
+
+enum ProductType {
+  BOOK
+  SERMON
+  ARTICLE
+}
+
+enum ProductCategory {
+  SPIRITUAL_GROWTH
+  THEOLOGY
+  RELATIONSHIP_AND_MARRIAGE
+  CHILDRENS_BOOKS
+  BIOGRAPHIES
+  OTHER
+}
+
+enum OrderStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+// Models
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String   // In real app, this would be hashed. If using Supabase Auth, this might link to auth.users
+  role      UserRole @default(CUSTOMER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  profile   Profile?
+  products  Product[] // Products sold by this user (if seller)
+  orders    Order[]   // Orders placed by this user (if customer)
+  reviews   Review[]
+  likes     Like[]
+}
+
+model Profile {
+  id        String @id @default(uuid())
+  userId    String @unique
+  user      User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  name      String
+  avatar    String?
+  bio       String?
+  location  String? // For currency preference
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  sellerId    String
+  seller      User        @relation(fields: [sellerId], references: [id])
+  
+  title       String
+  description String
+  price       Decimal     @db.Decimal(10, 2)
+  type        ProductType
+  category    ProductCategory? // Optional, primarily for books
+  
+  // Media
+  coverImage  String?
+  fileUrl     String?     // For digital downloads (PDF/Audio)
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  orderItems  OrderItem[]
+  reviews     Review[]
+  likes       Like[]
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  customerId  String
+  customer    User        @relation(fields: [customerId], references: [id])
+  
+  total       Decimal     @db.Decimal(10, 2)
+  status      OrderStatus @default(PENDING)
+  
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  items       OrderItem[]
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2) // Price at time of purchase
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  customerId String
+  customer   User     @relation(fields: [customerId], references: [id])
+  
+  rating     Int
+  comment    String?
+  
+  createdAt  DateTime @default(now())
+}
+
+model Like {
+  id         String   @id @default(uuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, productId])
+}
