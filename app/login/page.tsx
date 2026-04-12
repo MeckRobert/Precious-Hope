@@ -2,14 +2,16 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useAuth, UserRole } from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 import { useRouter } from 'next/navigation';
+import { getRedirectPathFromRole } from '@/lib/session-client';
 
 export default function LoginPage() {
     const { login, isLoading } = useAuth();
     const router = useRouter();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [rememberMe, setRememberMe] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -19,10 +21,18 @@ export default function LoginPage() {
         const formData = new FormData();
         formData.append('email', email);
         formData.append('password', password);
+        formData.append('rememberMe', rememberMe ? 'on' : 'off');
 
         const result = await login(formData);
+        
         if (result.success) {
-            router.push('/profile');
+            // Use the client-safe function to get redirect path based on user role
+            const redirectPath = result.user?.role 
+                ? getRedirectPathFromRole(result.user.role)
+                : '/profile';
+            
+            router.push(redirectPath);
+            router.refresh(); // Refresh to update auth state
         } else {
             setError(result.error || "Login failed");
         }
@@ -37,7 +47,7 @@ export default function LoginPage() {
                 </div>
 
                 {error && (
-                    <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 text-center">
+                    <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4 text-center border border-red-100">
                         {error}
                     </div>
                 )}
@@ -65,22 +75,49 @@ export default function LoginPage() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                         />
-                        <div className="flex justify-end mt-1">
-                            <Link href="/forgot-password" className="text-xs text-primary hover:underline">Forgot password?</Link>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center">
+                            <input
+                                type="checkbox"
+                                id="rememberMe"
+                                className="mr-2 rounded border-slate-300 text-primary focus:ring-primary"
+                                checked={rememberMe}
+                                onChange={(e) => setRememberMe(e.target.checked)}
+                            />
+                            <label htmlFor="rememberMe" className="text-sm text-slate-600">
+                                Remember me 
+                            </label>
                         </div>
+                        <Link href="/forgot-password" className="text-sm text-primary hover:underline">
+                            Forgot password?
+                        </Link>
                     </div>
 
                     <button
+                        type="submit"
                         disabled={isLoading}
-                        className="w-full py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 disabled:opacity-70 disabled:cursor-not-allowed"
+                        className="w-full py-3 bg-primary text-white font-bold rounded-lg hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20 mt-6 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                        {isLoading ? 'Signing In...' : 'Sign In'}
+                        {isLoading ? (
+                            <span className="flex items-center justify-center">
+                                <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                Signing In...
+                            </span>
+                        ) : 'Sign In'}
                     </button>
                 </form>
 
                 <div className="mt-8 pt-6 border-t border-slate-100 text-center">
                     <p className="text-sm text-slate-500">
-                        Don't have an account? <Link href="/register" className="text-primary font-bold hover:underline">Sign up</Link>
+                        Don't have an account?{' '}
+                        <Link href="/register" className="text-primary font-bold hover:underline">
+                            Sign up
+                        </Link>
                     </p>
                 </div>
             </div>

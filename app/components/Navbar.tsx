@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { ShoppingCart, Menu, Search, User } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
+import Image from "next/image";
 
 export default function Navbar() {
     const { cartCount } = useCart();
@@ -14,6 +15,13 @@ export default function Navbar() {
             <div className="container mx-auto px-4 lg:px-8 h-16 flex items-center justify-between">
                 {/* Logo */}
                 <Link href="/" className="text-2xl font-serif font-bold text-secondary tracking-tight">
+                    {/* <Image
+                       src="/images/logo4.jpg"
+                       alt="logo"
+                       width={60}
+                       height={45}
+                    /> */}
+
                     Precious<span className="text-primary">Hope</span>
                 </Link>
 

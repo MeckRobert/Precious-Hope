@@ -1,0 +1,81 @@
+import { SignJWT, jwtVerify } from 'jose'
+import { cookies } from 'next/headers'
+import { UserRole } from '@prisma/client'
+
+const secretKey = process.env.JWT_SECRET 
+if (!secretKey) {
+  throw new Error('JWT_SECRET environment variable is not set')
+}
+const key = new TextEncoder().encode(secretKey)
+
+export type SessionUser = {
+  id: string
+  email: string  // Fixed: changed String to string
+  name: string
+  role: UserRole
+}
+
+export async function encrypt(payload: SessionUser & { expires: Date }) {
+  // Fixed: changed signJWT to SignJWT (capital S)
+  return await new SignJWT({ ...payload })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime(payload.expires)
+    .sign(key)
+}
+
+export async function decrypt(input: string): Promise<SessionUser | null> {
+  try {
+    const { payload } = await jwtVerify(input, key, {
+      algorithms: ['HS256']
+    })
+    return payload as unknown as SessionUser
+  } catch (error) {
+    return null
+  }
+}
+
+export async function getSession() {
+  const cookieStore = await cookies()
+  const session = cookieStore.get('session')?.value
+
+  if (!session) return null
+  return await decrypt(session)
+}
+
+export async function setSession(user: SessionUser, rememberMe: boolean = false) {
+  const expires = new Date()
+  expires.setDate(expires.getDate() + (rememberMe ? 30 : 1)) // 30 days or 1 day
+
+  // Fixed: Moved these lines inside the function
+  const session = await encrypt({ ...user, expires })
+  const cookieStore = await cookies()
+  
+  cookieStore.set('session', session, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    expires,
+    sameSite: 'lax',
+    path: '/',
+  })
+}
+
+export async function clearSession() {
+  const cookieStore = await cookies()
+  cookieStore.delete('session')
+}
+
+export function getUserRoleRedirectedPath(role: UserRole) {
+  switch(role){
+    case 'ADMIN':
+      return '/components/dashboard/admin'
+    case 'SELLER':
+      return '/components/dashboard/seller'
+    case 'CUSTOMER':
+      return '/components/dashboard/customer'
+    default:
+      return '/'
+  }
+}
+// Note: This config export belongs in middleware.ts, not here
+// Remove it from this file

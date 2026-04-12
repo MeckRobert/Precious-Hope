@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../context/AuthContext';
-import CustomerDashboard from '../components/dashboard/CustomerDashboard';
-import SellerDashboard from '../components/dashboard/SellerDashboard';
-import AdminDashboard from '../components/dashboard/AdminDashboard';
+import CustomerDashboard from '../components/dashboard/customer/page';
+import SellerDashboard from '../components/dashboard/seller/page';
+import AdminDashboard from '../components/dashboard/admin/page';
 
 export default function ProfilePage() {
     const { user, isAuthenticated, isLoading } = useAuth();

@@ -63,7 +63,7 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-slate-500">
-                    <p>&copy; {new Date().getFullYear()} Precious Hope. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Precious Hope. All rights reserved @ 2026</p>
                     <div className="flex space-x-6 mt-4 md:mt-0">
                         <Link href="/privacy" className="hover:text-slate-300">Privacy Policy</Link>
                         <Link href="/terms" className="hover:text-slate-300">Terms of Service</Link>
