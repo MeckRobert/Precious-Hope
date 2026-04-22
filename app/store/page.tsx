@@ -183,7 +183,7 @@ export default function StorePage() {
                                     <div className="mt-auto flex items-center justify-between pt-4 border-t border-slate-50">
                                         <span className="text-xl font-bold text-secondary">{formatPrice(book.price)}</span>
                                         <button
-                                            onClick={() => addToCart({ id: book.id, title: book.title, price: book.price })}
+                                            onClick={() => addToCart({ id: book.id, name: book.title, price: book.price,quantity: 1})}
                                             className="p-2 bg-slate-100 text-secondary rounded-full hover:bg-primary hover:text-white transition-colors"
                                             title="Add to Cart"
                                         >

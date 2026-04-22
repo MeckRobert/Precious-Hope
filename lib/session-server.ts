@@ -1,4 +1,6 @@
 // lib/session-server.ts
+import 'server-only'
+import { UserRole } from '@prisma/client'
 import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import { SessionUser } from './session-types'  // Import type from shared file

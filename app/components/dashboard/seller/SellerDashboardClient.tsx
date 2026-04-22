@@ -50,6 +50,7 @@ export default function SellerDashboardClient({ sessionName }: Props) {
         title: p.title,
         author: p.seller.profile?.name || 'Unknown',
         price: p.price.toString(),
+        description: p.description ?? "",
         type: p.type.toLowerCase() as ProductType,
         category: p.category
           ? (p.category.replace(/_/g, ' ') as BookCategory)

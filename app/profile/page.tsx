@@ -1,21 +1,40 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../context/AuthContext';
-import CustomerDashboard from '../components/dashboard/customer/page';
-import SellerDashboard from '../components/dashboard/seller/page';
-import AdminDashboard from '../components/dashboard/admin/page';
+
+type User = {
+    name: string;
+    email: string;
+    role: string;
+    avatar: string;
+};
 
 export default function ProfilePage() {
-    const { user, isAuthenticated, isLoading } = useAuth();
+    const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
-        if (!isLoading && !isAuthenticated) {
-            router.push('/login');
-        }
-    }, [isLoading, isAuthenticated, router]);
+        const fetchSession = async () => {
+            try {
+                const res = await fetch('/api/session');
+                const data = await res.json();
+
+                if (!data) {
+                    router.push('/login');
+                } else {
+                    setUser(data);
+                }
+            } catch (error) {
+                router.push('/login');
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        fetchSession();
+    }, [router]);
 
     if (isLoading) {
         return (
@@ -44,10 +63,11 @@ export default function ProfilePage() {
                 </div>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden min-h-[400px]">
-                {user.role === 'customer' && <CustomerDashboard />}
-                {user.role === 'seller' && <SellerDashboard />}
-                {user.role === 'admin' && <AdminDashboard />}
+            {/* SIMPLE ROLE DISPLAY (NO SERVER IMPORTS) */}
+            <div className="bg-white rounded-2xl shadow-xl border p-6">
+                {user.role === 'CUSTOMER' && <p>Customer Dashboard</p>}
+                {user.role === 'SELLER' && <p>Seller Dashboard</p>}
+                {user.role === 'ADMIN' && <p>Admin Dashboard</p>}
             </div>
         </div>
     );

@@ -14,7 +14,7 @@ const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  role: z.enum(['CUSTOMER', 'ADMIN', 'VENDOR']).default('CUSTOMER'), // Fixed: Added VENDOR
+  role: z.enum(['CUSTOMER', 'ADMIN', 'SELLER']).default('CUSTOMER'), // Fixed: Added VENDOR
 })
 
 const loginSchema = z.object({
@@ -75,7 +75,7 @@ export async function registerUser(formData: FormData) {
     console.error('Registration error:', error)
     
     if (error instanceof z.ZodError) {
-      return { success: false, error: error.errors[0]?.message || 'Validation failed' }
+      return { success: false, error: error.issues[0]?.message || 'Validation failed' }
     }
     
     return { success: false, error: 'An unexpected error occurred. Please try again.' }
@@ -132,7 +132,7 @@ export async function loginUser(formData: FormData) {
     if (error instanceof z.ZodError) {
       return { 
         success: false, 
-        error: error.errors[0]?.message || 'Validation failed' 
+        error: error.issues[0]?.message || 'Validation failed' 
       }
     }
     

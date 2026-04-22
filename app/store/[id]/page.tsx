@@ -30,8 +30,10 @@ export default function BookDetailsPage({ params }: { params: { id: string } }) 
         if (!book) return;
         addToCart({
             id: book.id,
-            title: book.title, // Fixed to use title key as per context
-            price: book.price
+            name: book.title, // Fixed to use title key as per context
+            price: book.price,
+            quantity: 1
+
         });
     };
 
