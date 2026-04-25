@@ -18,14 +18,14 @@ import ProductForm, {
   ProductType,
   BookCategory,
 } from '../ProductForm';
-import { useCurrency } from '../../../context/CurrencyContext';
-import { useAuth } from '../../../context/AuthContext';
+import { useCurrency } from '../../context/CurrencyContext';
+import { useAuth } from '../../context/AuthContext';
 import {
   getProducts,
   createProduct,
   updateProduct,
   deleteProduct,
-} from '../../../actions/product';
+} from '../../actions/product';
 
 type Props = {
   sessionName: string;
