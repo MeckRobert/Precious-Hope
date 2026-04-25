@@ -5,9 +5,17 @@ import SellerDashboardClient from './SellerDashboardClient';
 export default async function SellerDashboardPage() {
   const session = await getSession();
 
-  if (!session || session.role !== 'SELLER') {
+  if (!session) {
     redirect('/login');
   }
 
-  return <SellerDashboardClient sessionName={session.name} />;
+  if (session.role !== 'SELLER') {
+    redirect('/login');
+  }
+
+  return (
+    <SellerDashboardClient
+      sessionName={session.name ?? 'User'}
+    />
+  );
 }

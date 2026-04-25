@@ -5,11 +5,12 @@ import { SignJWT, jwtVerify } from 'jose'
 import { cookies } from 'next/headers'
 import { SessionUser } from './session-types'  // Import type from shared file
 
-const secretKey = process.env.JWT_SECRET 
-if (!secretKey) {
-  throw new Error('JWT_SECRET environment variable is not set')
+const secretKey = process.env.JWT_SECRET;
+
+if (!secretKey && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET missing in production');
 }
-const key = new TextEncoder().encode(secretKey)
+const key = new TextEncoder().encode(secretKey || '');
 
 export async function encrypt(payload: SessionUser & { expires: Date }) {
   return await new SignJWT({ ...payload })
@@ -61,11 +62,11 @@ export async function clearSession() {
 export function getUserRoleRedirectedPath(role: UserRole) {
   switch (role) {
     case 'ADMIN':
-      return '/components/dashboard/admin'
+      return '/dashboard/admin'
     case 'SELLER':
-      return '/components/dashboard/seller'
+      return '/dashboard/seller'
     case 'CUSTOMER':
-      return '/components/dashboard/customer'
+      return '/dashboard/customer'
     default:
       return '/'
   }

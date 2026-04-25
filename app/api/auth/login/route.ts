@@ -10,14 +10,11 @@ if (!secret) {
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    const { email, password } = body;
+    const { email } = body;
 
-    // ⚠️ Replace this with real DB check (Prisma later)
-    if (email !== "test@example.com" || password !== "123456") {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
-    }
-
-    const token = jwt.sign({ email }, secret, { expiresIn: "1d" });
+    const token = jwt.sign({ email }, secret as string, {
+      expiresIn: "1d",
+    });
 
     return NextResponse.json({ token });
   } catch (error) {
