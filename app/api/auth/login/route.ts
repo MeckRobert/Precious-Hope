@@ -1,23 +1,16 @@
 import { NextResponse } from "next/server";
-import jwt from "jsonwebtoken";
+import { SignJWT } from "jose";
 
-const secret = process.env.JWT_SECRET;
-
-if (!secret) {
-  throw new Error("JWT_SECRET environment variable is not set");
-}
+const secret = new TextEncoder().encode(process.env.JWT_SECRET || "");
 
 export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const { email } = body;
+  const body = await req.json();
+  const { email } = body;
 
-    const token = jwt.sign({ email }, secret as string, {
-      expiresIn: "1d",
-    });
+  const token = await new SignJWT({ email })
+    .setProtectedHeader({ alg: "HS256" })
+    .setExpirationTime("1d")
+    .sign(secret);
 
-    return NextResponse.json({ token });
-  } catch (error) {
-    return NextResponse.json({ error: "Something went wrong" }, { status: 500 });
-  }
+  return NextResponse.json({ token });
 }
